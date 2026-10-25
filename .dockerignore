@@ -1,0 +1,9 @@
+.env
+.git
+.gitignore
+tmp/
+*.log
+README.md
+flow.md
+scripts/
+migrations/
