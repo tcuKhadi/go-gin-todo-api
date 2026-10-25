@@ -1,2 +1,5 @@
 go-gin-todo-api
 .env
+.env
+tmp/
+.env

@@ -3,10 +3,12 @@ package main
 
 import (
 	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/config"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/database"
+	"github.com/tcuKhadi/go-gin-todo-api/internal/handlers"
 )
 
 // Runs the server
@@ -39,5 +41,13 @@ func main() {
 			"database": "connected",
 		})
 	})
+
+	router.POST("/todos", handlers.CreateToDoHandler(pool))
+	router.GET("/todos", handlers.GetAllTodoshandler(pool))
+	router.GET("/todos/:id", handlers.GetToDoByIDHandler(pool))
+	router.PUT("/todos/:id", handlers.UpdateToDoHandler(pool))
+	router.DELETE("/todos/:id", handlers.DeleteToDohandler(pool))
+
+
 	router.Run(":" + cfg.Port)
 }
