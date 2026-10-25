@@ -102,3 +102,13 @@ internal/repository/   SQL
 migrations/            SQL migrations
 scripts/migrate.sh     migration helper
 ```
+
+## Testing
+
+The API was tested with Postman. The functional run executes all 23 requests in order, covering registration, login, and each todo operation, including expected failure cases such as a duplicate email, a short password, and malformed JSON.
+
+![Postman functional test run, 23 of 23 passing](docs/functional-tests.png)
+
+The load test used a fixed profile of 3 virtual users for 5 minutes, running the full collection against the server in the Docker container.
+
+![Postman load test, 3 virtual users for 5 minutes](docs/load-test.png)
