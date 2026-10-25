@@ -28,6 +28,7 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
+// CreateUserHandler registers a new user and returns the created record without the password.
 func CreateUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var registerRequest RegisterRequest
@@ -68,6 +69,7 @@ func CreateUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	}
 }
 
+// LoginHandler checks the email and password and returns a signed token.
 func LoginHandler(pool *pgxpool.Pool, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var loginRequest LoginRequest
@@ -113,12 +115,14 @@ func TestProtectedHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, exists := c.Get("user_id")
 
-		if !exists {{
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "user_id not found in context"})
-			return
-		}}
+		if !exists {
+			{
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "user_id not found in context"})
+				return
+			}
+		}
 
-		c.JSON(http.StatusOK, gin.H {
+		c.JSON(http.StatusOK, gin.H{
 			"message": "Protected route accessed successfully",
 			"user_id": userID,
 		})

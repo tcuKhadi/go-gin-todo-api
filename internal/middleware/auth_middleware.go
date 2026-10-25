@@ -11,6 +11,7 @@ import (
 	"github.com/tcuKhadi/go-gin-todo-api/internal/config"
 )
 
+// AuthMiddleware rejects requests without a valid HS256 token and stores user_id in the context.
 func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")

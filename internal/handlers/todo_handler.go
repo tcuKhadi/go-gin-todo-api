@@ -23,6 +23,7 @@ type UpdateTodoInput struct {
 	Completed *bool `json:"completed"`
 }
 
+// CreateToDoHandler creates a todo for the authenticated user.
 func CreateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDInterface, exists := c.Get("user_id")
@@ -47,6 +48,7 @@ func CreateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	}
 }
 
+// GetAllTodoshandler returns the authenticated user's todos.
 func GetAllTodoshandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -68,6 +70,7 @@ func GetAllTodoshandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	}
 }
 
+// GetToDoByIDHandler returns one todo owned by the authenticated user.
 func GetToDoByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDInterface, exists := c.Get("user_id")
@@ -99,6 +102,7 @@ func GetToDoByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	}
 }
 
+// UpdateToDoHandler updates a todo owned by the authenticated user.
 func UpdateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDInterface, exists := c.Get("user_id")
@@ -157,6 +161,7 @@ func UpdateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	}
 }
 
+// DeleteToDohandler deletes a todo owned by the authenticated user.
 func DeleteToDohandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDInterface, exists := c.Get("user_id")

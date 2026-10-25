@@ -13,6 +13,7 @@ type Config struct {
 	JWTSecret   string
 }
 
+// Load reads the configuration from environment variables.
 func Load() (*Config, error) {
 	var err error = godotenv.Load()
 
@@ -23,7 +24,7 @@ func Load() (*Config, error) {
 	var config *Config = &Config{
 		DatabaseUrl: os.Getenv("DATABASE_URL"),
 		Port:        os.Getenv("PORT"),
-		JWTSecret: os.Getenv("JWT_SECRET"),
+		JWTSecret:   os.Getenv("JWT_SECRET"),
 	}
 
 	return config, nil

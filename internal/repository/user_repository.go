@@ -8,6 +8,7 @@ import (
 	"github.com/tcuKhadi/go-gin-todo-api/internal/models"
 )
 
+// CreateUser stores a new user. The password must already be hashed.
 func CreateUser(pool *pgxpool.Pool, user *models.User) (*models.User, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -34,7 +35,7 @@ func CreateUser(pool *pgxpool.Pool, user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-
+// GetUserByEmail returns the user with this email, or pgx.ErrNoRows.
 func GetUserByEmail(pool *pgxpool.Pool, email string) (*models.User, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -63,6 +64,7 @@ func GetUserByEmail(pool *pgxpool.Pool, email string) (*models.User, error) {
 	return &user, nil
 }
 
+// GetUserByID returns the user with this ID, or pgx.ErrNoRows.
 func GetUserByID(pool *pgxpool.Pool, id string) (*models.User, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -90,4 +92,3 @@ func GetUserByID(pool *pgxpool.Pool, id string) (*models.User, error) {
 
 	return &user, nil
 }
-

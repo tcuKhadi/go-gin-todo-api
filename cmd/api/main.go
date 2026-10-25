@@ -37,8 +37,8 @@ func main() {
 		// map[string]interface
 		// map[string]any{}
 		c.JSON(200, gin.H{
-			"message": "Todo API is running well!",
-			"status":  "success",
+			"message":  "Todo API is running well!",
+			"status":   "success",
 			"database": "connected",
 		})
 	})
@@ -55,7 +55,6 @@ func main() {
 		protected.PUT("/:id", handlers.UpdateToDoHandler(pool))
 		protected.DELETE("/:id", handlers.DeleteToDohandler(pool))
 	}
-
 
 	// Middleware Test Route
 	router.GET("/protected-test", middleware.AuthMiddleware(cfg), handlers.TestProtectedHandler())

@@ -2,10 +2,11 @@ package database
 
 import (
 	"context"
-	"log"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 )
 
+// Connect opens a connection pool and checks it with a ping.
 func Connect(databaseURL string) (*pgxpool.Pool, error) {
 	var ctx context.Context = context.Background()
 

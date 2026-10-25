@@ -9,6 +9,7 @@ import (
 	"github.com/tcuKhadi/go-gin-todo-api/internal/models"
 )
 
+// CreateTodo inserts a todo owned by userID and returns the saved row.
 func CreateTodo(pool *pgxpool.Pool, title string, completed bool, userID string) (*models.Todo, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -36,6 +37,7 @@ func CreateTodo(pool *pgxpool.Pool, title string, completed bool, userID string)
 	return &todo, nil
 }
 
+// GetAllTodos returns only the todos owned by userID, newest first.
 func GetAllTodos(pool *pgxpool.Pool, userID string) ([]models.Todo, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -86,6 +88,7 @@ func GetAllTodos(pool *pgxpool.Pool, userID string) ([]models.Todo, error) {
 
 }
 
+// GetToDoByID returns the todo only if userID owns it, otherwise pgx.ErrNoRows.
 func GetToDoByID(pool *pgxpool.Pool, id int, userID string) (*models.Todo, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -115,6 +118,7 @@ func GetToDoByID(pool *pgxpool.Pool, id int, userID string) (*models.Todo, error
 	return &todo, nil
 }
 
+// UpdateToDo changes a todo only if userID owns it, otherwise pgx.ErrNoRows.
 func UpdateToDo(pool *pgxpool.Pool, id int, title string, completed bool, userID string) (*models.Todo, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -134,7 +138,7 @@ func UpdateToDo(pool *pgxpool.Pool, id int, title string, completed bool, userID
 		&todo.Title,
 		&todo.Completed,
 		&todo.CreatedAt,
-		&todo.UpdatedAt, 
+		&todo.UpdatedAt,
 		&todo.UserID,
 	)
 
@@ -144,7 +148,8 @@ func UpdateToDo(pool *pgxpool.Pool, id int, title string, completed bool, userID
 	return &todo, nil
 }
 
-func DeleteToDo(pool *pgxpool.Pool, id int, userID string) error {  
+// DeleteToDo removes a todo only if userID owns it.
+func DeleteToDo(pool *pgxpool.Pool, id int, userID string) error {
 	var ctx context.Context
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
