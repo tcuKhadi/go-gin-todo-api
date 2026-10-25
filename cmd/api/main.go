@@ -9,6 +9,7 @@ import (
 	"github.com/tcuKhadi/go-gin-todo-api/internal/config"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/database"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/handlers"
+	"github.com/tcuKhadi/go-gin-todo-api/internal/middleware"
 )
 
 // Runs the server
@@ -42,12 +43,22 @@ func main() {
 		})
 	})
 
-	router.POST("/todos", handlers.CreateToDoHandler(pool))
-	router.GET("/todos", handlers.GetAllTodoshandler(pool))
-	router.GET("/todos/:id", handlers.GetToDoByIDHandler(pool))
-	router.PUT("/todos/:id", handlers.UpdateToDoHandler(pool))
-	router.DELETE("/todos/:id", handlers.DeleteToDohandler(pool))
+	router.POST("/auth/register", handlers.CreateUserHandler(pool))
+	router.POST("/auth/login", handlers.LoginHandler(pool, cfg))
 
+	protected := router.Group("/todos")
+	protected.Use(middleware.AuthMiddleware(cfg))
+	{
+		protected.POST("", handlers.CreateToDoHandler(pool))
+		protected.GET("", handlers.GetAllTodoshandler(pool))
+		protected.GET("/:id", handlers.GetToDoByIDHandler(pool))
+		protected.PUT("/:id", handlers.UpdateToDoHandler(pool))
+		protected.DELETE("/:id", handlers.DeleteToDohandler(pool))
+	}
+
+
+	// Middleware Test Route
+	router.GET("/protected-test", middleware.AuthMiddleware(cfg), handlers.TestProtectedHandler())
 
 	router.Run(":" + cfg.Port)
 }

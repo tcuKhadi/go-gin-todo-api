@@ -1,5 +1,18 @@
-go-gin-todo-api
-.env
-.env
+# runtime and build output
 tmp/
+*.log
+
+# secrets
 .env
+
+# compiled binaries
+go-gin-todo-api
+*.exe
+*.test
+*.out
+
+# editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
