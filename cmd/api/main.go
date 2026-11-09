@@ -1,41 +1,50 @@
-// Entry point
 package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/config"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/database"
+	"github.com/tcuKhadi/go-gin-todo-api/internal/events"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/handlers"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/middleware"
 )
 
-// Runs the server
 func main() {
-	var cfg *config.Config
-	var err error
-	cfg, err = config.Load()
-
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("Failed to load configuration", err)
+		log.Fatal("Failed to load configuration: ", err)
 	}
 
-	var pool *pgxpool.Pool
-	pool, err = database.Connect(cfg.DatabaseUrl)
-
+	pool, err := database.Connect(cfg.DatabaseUrl)
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatal("Failed to connect to database: ", err)
 	}
-
 	defer pool.Close()
 
-	var router *gin.Engine = gin.Default()
+	// Kafka Producer Initialization
+	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
+	if kafkaBrokers == "" {
+		kafkaBrokers = "localhost:9092"
+	}
+	kafkaTopic := os.Getenv("KAFKA_TOPIC")
+	if kafkaTopic == "" {
+		kafkaTopic = "todo-events"
+	}
+
+	producer := events.NewProducer(kafkaBrokers, kafkaTopic)
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.Printf("Failed to close Kafka producer: %v", err)
+		}
+	}()
+
+	router := gin.Default()
 	router.SetTrustedProxies(nil)
+
 	router.GET("/", func(c *gin.Context) {
-		// map[string]interface
-		// map[string]any{}
 		c.JSON(200, gin.H{
 			"message":  "Todo API is running well!",
 			"status":   "success",
@@ -49,14 +58,13 @@ func main() {
 	protected := router.Group("/todos")
 	protected.Use(middleware.AuthMiddleware(cfg))
 	{
-		protected.POST("", handlers.CreateToDoHandler(pool))
+		protected.POST("", handlers.CreateToDoHandler(pool, producer))
 		protected.GET("", handlers.GetAllTodoshandler(pool))
 		protected.GET("/:id", handlers.GetToDoByIDHandler(pool))
 		protected.PUT("/:id", handlers.UpdateToDoHandler(pool))
 		protected.DELETE("/:id", handlers.DeleteToDohandler(pool))
 	}
 
-	// Middleware Test Route
 	router.GET("/protected-test", middleware.AuthMiddleware(cfg), handlers.TestProtectedHandler())
 
 	router.Run(":" + cfg.Port)

@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/tcuKhadi/go-gin-todo-api/internal/events"
 	"github.com/tcuKhadi/go-gin-todo-api/internal/repository"
 )
 
@@ -16,15 +19,12 @@ type CreateToDoInput struct {
 }
 
 type UpdateTodoInput struct {
-	Title *string `json:"title"`
-	// &true -------------> set completed as true
-	// &false -------------> set completed as false
-	// nil -------------> set not provided
-	Completed *bool `json:"completed"`
+	Title     *string `json:"title"`
+	Completed *bool   `json:"completed"`
 }
 
-// CreateToDoHandler creates a todo for the authenticated user.
-func CreateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+// CreateToDoHandler creates a todo for the authenticated user and publishes a Kafka event.
+func CreateToDoHandler(pool *pgxpool.Pool, producer *events.Producer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDInterface, exists := c.Get("user_id")
 		if !exists {
@@ -44,6 +44,15 @@ func CreateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
+		if producer != nil {
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				_ = producer.Publish(ctx, strconv.Itoa(todo.ID), "TODO_CREATED", todo)
+			}()
+		}
+
 		c.JSON(http.StatusCreated, todo)
 	}
 }
@@ -51,14 +60,11 @@ func CreateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 // GetAllTodoshandler returns the authenticated user's todos.
 func GetAllTodoshandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		userIDInterface, exists := c.Get("user_id")
 		if !exists {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "user_id not found in context"})
 			return
 		}
-
-		// interface{} or any{},
 		userID := userIDInterface.(string)
 
 		todos, err := repository.GetAllTodos(pool, userID)
@@ -93,7 +99,6 @@ func GetToDoByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
 				return
 			}
-
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -136,7 +141,6 @@ func UpdateToDoHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
 				return
 			}
-
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -184,7 +188,6 @@ func DeleteToDohandler(pool *pgxpool.Pool) gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
 				return
 			}
-
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
